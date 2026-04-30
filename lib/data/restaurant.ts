@@ -2,8 +2,9 @@ export function isRestaurantOpen(): boolean {
   if (RESTAURANT.isForceOpen) return true
   if (RESTAURANT.isForceClosed) return false
   const now = new Date()
-  const hour = now.getHours()
-  const minute = now.getMinutes()
+  const nyTime = now.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false })
+  const [datePart, timePart] = nyTime.split(', ')
+  const [hour, minute] = timePart.split(':').map(Number)
   return hour >= RESTAURANT.hoursOpen && (hour < RESTAURANT.hoursClose || (hour === RESTAURANT.hoursClose && minute === 0))
 }
 
@@ -26,6 +27,6 @@ export const RESTAURANT = {
   embedMapsUrl: 'https://maps.google.com/maps?q=3448%20Route%209W%2C%20Highland%2C%20NY%2012528&t=&z=15&ie=UTF8&iwloc=&output=embed',
   coordinates: { lat: 41.72, lng: -73.96 },
   taxRate: 0.08875,
-  isForceClosed: true,
+  isForceClosed: false,
   isForceOpen: false,
 } as const
