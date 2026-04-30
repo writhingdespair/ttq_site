@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply bg-black text-white antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    @apply bg-terra-500/30 text-white;
+  }
+
+  a, button {
+    @apply transition-all duration-base;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-white/80 rounded-sm;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-medium
+           transition-all duration-base ease-out-expo
+           active:scale-[0.98];
+  }
+  .btn-sm {
+    @apply btn h-9 px-4 text-label-sm rounded-lg;
+  }
+  .btn-md {
+    @apply btn h-11 px-5 text-label-md rounded-xl;
+  }
+  .btn-lg {
+    @apply btn h-14 px-7 text-body-base rounded-full;
+  }
+  .btn-primary {
+    @apply bg-white text-black
+           hover:bg-white/90 hover:shadow-elevation-2
+           active:bg-white/80;
+  }
+  .btn-secondary {
+    @apply bg-white/10 text-white
+           hover:bg-white/[0.14] hover:shadow-elevation-1
+           active:bg-white/[0.08];
+  }
+  .btn-ghost {
+    @apply bg-transparent text-white/60
+           hover:text-white hover:bg-white/[0.06];
+  }
+  .btn-terra {
+    @apply bg-terra-500 text-white
+           hover:bg-terra-400 hover:shadow-glow-terra
+           active:bg-terra-600;
+  }
+
+  .card {
+    @apply rounded-2xl bg-white/[0.04] border border-white/[0.06]
+           transition-all duration-base ease-out-expo;
+  }
+  .card-hover {
+    @apply card hover:bg-white/[0.07] hover:border-white/[0.1]
+           hover:shadow-elevation-2 hover:-translate-y-0.5;
+  }
+
+  .section-divider {
+    @apply w-full h-px bg-white/[0.06];
+  }
+
+  .text-primary {
+    @apply text-white;
+  }
+  .text-secondary {
+    @apply text-white/70;
+  }
+  .text-tertiary {
+    @apply text-white/45;
+  }
+  .text-warm {
+    @apply text-terra-200;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
