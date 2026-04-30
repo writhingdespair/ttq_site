@@ -46,7 +46,7 @@ export default function MenuCategoryNav({
         )}
         <div
           ref={scrollRef}
-          className="flex gap-1 px-4 py-3 overflow-x-auto scrollbar-hide"
+          className="flex gap-1 px-4 py-3 overflow-x-auto scrollbar-hide justify-center"
         >
           {categories.map((cat) => (
             <button
