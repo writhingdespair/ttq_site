@@ -11,6 +11,8 @@ export default function MenuPage() {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
   useEffect(() => {
+    const headerOffset = window.innerWidth >= 768 ? 120 : 112
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -20,7 +22,7 @@ export default function MenuPage() {
           }
         }
       },
-      { rootMargin: '-100px 0px -60% 0px', threshold: 0 }
+      { rootMargin: `-${headerOffset}px 0px -60% 0px`, threshold: 0 }
     )
 
     Object.values(sectionRefs.current).forEach((el) => {
@@ -32,9 +34,10 @@ export default function MenuPage() {
 
   const scrollToCategory = (id: string) => {
     const el = sectionRefs.current[id]
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+    if (!el) return
+    const headerOffset = window.innerWidth >= 768 ? 120 : 112
+    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
+    window.scrollTo({ top, behavior: 'smooth' })
   }
 
   return (

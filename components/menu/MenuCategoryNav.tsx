@@ -39,7 +39,7 @@ export default function MenuCategoryNav({
   }, [activeId])
 
   return (
-    <div className="sticky top-[72px] z-sticky bg-black/90 backdrop-blur-md border-b border-white/[0.06]">
+    <div className="sticky top-16 md:top-[72px] z-sticky bg-black/90 backdrop-blur-md border-b border-white/[0.06]">
       <div className="relative">
         {showLeftFade && (
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
