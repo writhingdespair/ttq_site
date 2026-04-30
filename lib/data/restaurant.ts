@@ -1,4 +1,5 @@
 export function isRestaurantOpen(): boolean {
+  if (RESTAURANT.isForceOpen) return true
   if (RESTAURANT.isForceClosed) return false
   const now = new Date()
   const hour = now.getHours()
@@ -26,4 +27,5 @@ export const RESTAURANT = {
   coordinates: { lat: 41.72, lng: -73.96 },
   taxRate: 0.08875,
   isForceClosed: false,
+  isForceOpen: true,
 } as const
