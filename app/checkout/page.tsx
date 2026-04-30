@@ -83,7 +83,7 @@ export default function CheckoutPage() {
           </div>
           <h1 className="font-display text-display-md text-white text-balance">We are currently closed</h1>
           <p className="mt-md text-body-base text-secondary max-w-sm mx-auto">
-            Online ordering is available daily from 10 AM to 8 PM. Come back during business hours to place your order.
+            We are open daily from 10 AM to 8 PM. Come back during business hours.
           </p>
           <LinkButton href="/menu" variant="primary" size="lg" className="mt-3xl">
             Back to Menu

@@ -16,7 +16,7 @@ export default function ClosureBanner() {
   if (!closed) return null
 
   return (
-    <div className="bg-amber-500 text-black text-center py-3 px-4 text-sm font-medium z-50 relative">
+    <div className="bg-amber-500 text-black text-center py-3 px-4 text-sm font-medium z-50 sticky top-0">
       We are currently closed. Online ordering is available daily 10 AM – 8 PM.
     </div>
   )
