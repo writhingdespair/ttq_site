@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/store/cart-context'
 import { formatPrice } from '@/lib/utils'
 import { placeOrder } from '@/lib/services/orders'
 import { Button, LinkButton } from '@/components/ui/Button'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Clock } from 'lucide-react'
+import { isRestaurantOpen } from '@/lib/data/restaurant'
 import type { OrderType } from '@/lib/models/order'
 
 export default function CheckoutPage() {
@@ -14,6 +15,14 @@ export default function CheckoutPage() {
   const { items, cart, clearCart } = useCart()
   const [submitting, setSubmitting] = useState(false)
   const [orderType, setOrderType] = useState<OrderType>('pickup')
+  const [isOpen, setIsOpen] = useState(true)
+
+  useEffect(() => {
+    const check = () => setIsOpen(isRestaurantOpen())
+    check()
+    const id = setInterval(check, 60000)
+    return () => clearInterval(id)
+  }, [])
 
   const [form, setForm] = useState({
     name: '',
@@ -24,7 +33,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (items.length === 0) return
+    if (items.length === 0 || !isOpen) return
     setSubmitting(true)
 
     const result = await placeOrder({
@@ -58,6 +67,26 @@ export default function CheckoutPage() {
           </p>
           <LinkButton href="/menu" variant="primary" size="lg" className="mt-3xl">
             Browse Menu
+            <ArrowRight className="h-5 w-5" strokeWidth={1.5} />
+          </LinkButton>
+        </div>
+      </main>
+    )
+  }
+
+  if (!isOpen) {
+    return (
+      <main id="main-content" className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center px-6 py-6xl max-w-md mx-auto">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.04] border border-white/[0.06] mb-6">
+            <Clock className="h-7 w-7 text-tertiary" strokeWidth={1.5} />
+          </div>
+          <h1 className="font-display text-display-md text-white text-balance">We are currently closed</h1>
+          <p className="mt-md text-body-base text-secondary max-w-sm mx-auto">
+            Online ordering is available daily from 10 AM to 8 PM. Come back during business hours to place your order.
+          </p>
+          <LinkButton href="/menu" variant="primary" size="lg" className="mt-3xl">
+            Back to Menu
             <ArrowRight className="h-5 w-5" strokeWidth={1.5} />
           </LinkButton>
         </div>

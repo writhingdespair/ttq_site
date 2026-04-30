@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect } from 'react'
-import { ShoppingBag, X, Plus, Minus, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ShoppingBag, X, Plus, Minus, Trash2, Clock } from 'lucide-react'
 import { useCart } from '@/lib/store/cart-context'
 import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import { isRestaurantOpen } from '@/lib/data/restaurant'
 import Link from 'next/link'
 
 export default function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, cart, updateQuantity, removeItem, clearCart } = useCart()
+  const [isOpen, setIsOpen] = useState(true)
 
   useEffect(() => {
     if (open) {
@@ -18,6 +20,13 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
     }
     return () => { document.body.style.overflow = '' }
   }, [open])
+
+  useEffect(() => {
+    const check = () => setIsOpen(isRestaurantOpen())
+    check()
+    const id = setInterval(check, 60000)
+    return () => clearInterval(id)
+  }, [])
 
   return (
     <>
@@ -133,15 +142,27 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
               >
                 Clear
               </Button>
-              <Link href="/checkout" className="flex-[2]" onClick={onClose}>
+              {isOpen ? (
+                <Link href="/checkout" className="flex-[2]" onClick={onClose}>
+                  <Button
+                    variant="terra"
+                    className="w-full"
+                    size="md"
+                  >
+                    Checkout
+                  </Button>
+                </Link>
+              ) : (
                 <Button
                   variant="terra"
-                  className="w-full"
+                  className="flex-[2]"
                   size="md"
+                  disabled
                 >
-                  Checkout
+                  <Clock className="h-4 w-4" strokeWidth={1.5} />
+                  Closed
                 </Button>
-              </Link>
+              )}
             </div>
           </div>
         )}

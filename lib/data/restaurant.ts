@@ -1,9 +1,17 @@
+export function isRestaurantOpen(): boolean {
+  if (RESTAURANT.isForceClosed) return false
+  const now = new Date()
+  const hour = now.getHours()
+  const minute = now.getMinutes()
+  return hour >= RESTAURANT.hoursOpen && (hour < RESTAURANT.hoursClose || (hour === RESTAURANT.hoursClose && minute === 0))
+}
+
 export const RESTAURANT = {
   name: 'Guerrero Taquería',
   tagline: 'Taste has a home address.',
   description: 'Hand-pressed tortillas, charcoal-grilled meats, and family recipes from Guerrero, Mexico — served fresh from our truck.',
   phone: '(845) 305-6168',
-  phoneRaw: '+18453056168',
+  phoneRaw: '+184****6168',
   address: '3448 Route 9W',
   city: 'Highland',
   state: 'NY',

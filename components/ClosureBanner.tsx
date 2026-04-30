@@ -1,13 +1,23 @@
 'use client'
 
-import { RESTAURANT } from '@/lib/data/restaurant'
+import { useEffect, useState } from 'react'
+import { isRestaurantOpen } from '@/lib/data/restaurant'
 
 export default function ClosureBanner() {
-  if (!RESTAURANT.isForceClosed) return null
+  const [closed, setClosed] = useState(false)
+
+  useEffect(() => {
+    const check = () => setClosed(!isRestaurantOpen())
+    check()
+    const id = setInterval(check, 60000)
+    return () => clearInterval(id)
+  }, [])
+
+  if (!closed) return null
 
   return (
     <div className="bg-amber-500 text-black text-center py-3 px-4 text-sm font-medium z-50 relative">
-      We are closed today. See you tomorrow!
+      We are currently closed. Online ordering is available daily 10 AM – 8 PM.
     </div>
   )
 }
