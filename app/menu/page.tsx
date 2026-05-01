@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { menuCategories } from '@/lib/data/menu'
-import MenuItemRow from '@/components/menu/MenuItemRow'
+import MenuItemCard from '@/components/menu/MenuItemRow'
 import MenuCategoryNav from '@/components/menu/MenuCategoryNav'
 import Footer from '@/components/Footer'
 
@@ -63,7 +63,7 @@ export default function MenuPage() {
           onSelect={scrollToCategory}
         />
 
-        <div className="mx-auto max-w-3xl px-6 py-4xl md:py-5xl">
+        <div className="mx-auto max-w-4xl px-6 py-4xl md:py-5xl">
           <div className="space-y-6xl">
             {menuCategories.map((category) => (
               <section
@@ -79,26 +79,20 @@ export default function MenuPage() {
                   <div className="mt-lg h-px bg-white/[0.06]" />
                 </div>
 
-                <div>
-                  {category.items.map((item) => (
-                    <MenuItemRow
-                      key={item.id}
-                      item={item}
-                      highlighted={item.tags?.includes('signature')}
-                    />
-                  ))}
-                </div>
+                {category.items.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {category.items.map((item) => (
+                      <MenuItemCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
 
                 {category.groups && category.groups.map((group) => (
                   <div key={group.name} className="mt-5">
-                    <h3 className="text-label-sm text-white/40 uppercase tracking-wider mb-3">{group.name}</h3>
-                    <div>
+                    <h3 className="text-label-sm text-white/40 uppercase tracking-wider mb-4">{group.name}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {group.items.map((item) => (
-                        <MenuItemRow
-                          key={item.id}
-                          item={item}
-                          highlighted={item.tags?.includes('signature')}
-                        />
+                        <MenuItemCard key={item.id} item={item} />
                       ))}
                     </div>
                   </div>

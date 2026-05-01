@@ -8,13 +8,12 @@ import type { MenuItem } from '@/lib/models/menu'
 
 const PLACEHOLDER = '/images/menu/_placeholder.svg'
 
-interface MenuItemRowProps {
+interface MenuItemCardProps {
   item: MenuItem
   className?: string
-  highlighted?: boolean
 }
 
-export default function MenuItemRow({ item, className, highlighted }: MenuItemRowProps) {
+export default function MenuItemCard({ item, className }: MenuItemCardProps) {
   const imgRef = useRef<HTMLImageElement>(null)
 
   const handleImgError = () => {
@@ -26,35 +25,34 @@ export default function MenuItemRow({ item, className, highlighted }: MenuItemRo
   return (
     <div
       className={cn(
-        'flex items-start justify-between gap-5 py-4 border-b border-white/[0.06] last:border-0 group transition-colors duration-base',
-        highlighted && 'bg-white/[0.03] -mx-3 px-3 rounded-lg border-transparent',
+        'rounded-2xl bg-white/[0.04] overflow-hidden transition-colors duration-base hover:bg-white/[0.06]',
         className
       )}
     >
-      <div className="flex items-start gap-3 min-w-0 flex-1">
+      <div className="aspect-[4/3] relative overflow-hidden">
         <img
           ref={imgRef}
           src={item.image || PLACEHOLDER}
           alt={item.name}
           onError={handleImgError}
-          className="w-14 h-14 rounded-lg object-cover flex-shrink-0 mt-0.5"
+          className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
         />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-body-sm font-medium text-white">{item.name}</h4>
-            {item.tags?.map((tag) => (
-              <Badge key={tag} tag={tag} />
-            ))}
-          </div>
-          <p className="mt-1 text-body-xs text-tertiary leading-snug">{item.description}</p>
-        </div>
       </div>
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <span className="text-body-sm font-medium text-white tabular-nums">
-          {formatPrice(item.price)}
-        </span>
-        <AddToCartButton item={item} size="sm" />
+      <div className="p-4">
+        <div className="flex items-start gap-2 flex-wrap">
+          <h4 className="text-body-sm font-medium text-white">{item.name}</h4>
+          {item.tags?.map((tag) => (
+            <Badge key={tag} tag={tag} />
+          ))}
+        </div>
+        <p className="mt-1 text-body-xs text-tertiary leading-snug line-clamp-3">{item.description}</p>
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-body-sm font-medium text-white tabular-nums">
+            {formatPrice(item.price)}
+          </span>
+          <AddToCartButton item={item} size="sm" />
+        </div>
       </div>
     </div>
   )

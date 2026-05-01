@@ -2,16 +2,16 @@
 
 import { menuCategories } from '@/lib/data/menu'
 import { MenuGroup } from '@/lib/models/menu'
-import MenuItemRow from '@/components/menu/MenuItemRow'
+import MenuItemCard from '@/components/menu/MenuItemRow'
 import { useScrollReveal } from '@/lib/hooks/use-scroll-reveal'
 
 function MenuGroupBlock({ group }: { group: MenuGroup }) {
   return (
     <div className="mt-5">
-      <h4 className="text-label-sm text-white/40 uppercase tracking-wider mb-3">{group.name}</h4>
-      <div>
+      <h4 className="text-label-sm text-white/40 uppercase tracking-wider mb-4">{group.name}</h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {group.items.map((item) => (
-          <MenuItemRow key={item.id} item={item} />
+          <MenuItemCard key={item.id} item={item} />
         ))}
       </div>
     </div>
@@ -53,15 +53,13 @@ export default function MenuSection() {
                   <div className="mt-lg h-px bg-white/[0.06]" />
                 </div>
 
-                <div>
-                  {category.items.map((item) => (
-                    <MenuItemRow
-                      key={item.id}
-                      item={item}
-                      highlighted={item.tags?.includes('signature')}
-                    />
-                  ))}
-                </div>
+                {category.items.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {category.items.map((item) => (
+                      <MenuItemCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
 
                 {category.groups && category.groups.map((group) => (
                   <MenuGroupBlock key={group.name} group={group} />
