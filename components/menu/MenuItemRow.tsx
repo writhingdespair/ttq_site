@@ -1,9 +1,12 @@
 'use client'
 
+import { useRef } from 'react'
 import { cn, formatPrice } from '@/lib/utils'
 import Badge from '@/components/ui/Badge'
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import type { MenuItem } from '@/lib/models/menu'
+
+const PLACEHOLDER = '/images/menu/_placeholder.svg'
 
 interface MenuItemRowProps {
   item: MenuItem
@@ -12,6 +15,14 @@ interface MenuItemRowProps {
 }
 
 export default function MenuItemRow({ item, className, highlighted }: MenuItemRowProps) {
+  const imgRef = useRef<HTMLImageElement>(null)
+
+  const handleImgError = () => {
+    if (imgRef.current && imgRef.current.src !== PLACEHOLDER) {
+      imgRef.current.src = PLACEHOLDER
+    }
+  }
+
   return (
     <div
       className={cn(
@@ -20,14 +31,24 @@ export default function MenuItemRow({ item, className, highlighted }: MenuItemRo
         className
       )}
     >
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="text-body-sm font-medium text-white">{item.name}</h4>
-          {item.tags?.map((tag) => (
-            <Badge key={tag} tag={tag} />
-          ))}
+      <div className="flex items-start gap-3 min-w-0 flex-1">
+        <img
+          ref={imgRef}
+          src={item.image || PLACEHOLDER}
+          alt={item.name}
+          onError={handleImgError}
+          className="w-14 h-14 rounded-lg object-cover flex-shrink-0 mt-0.5"
+          loading="lazy"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="text-body-sm font-medium text-white">{item.name}</h4>
+            {item.tags?.map((tag) => (
+              <Badge key={tag} tag={tag} />
+            ))}
+          </div>
+          <p className="mt-1 text-body-xs text-tertiary leading-snug">{item.description}</p>
         </div>
-        <p className="mt-1 text-body-xs text-tertiary leading-snug">{item.description}</p>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
         <span className="text-body-sm font-medium text-white tabular-nums">
