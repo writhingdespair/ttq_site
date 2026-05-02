@@ -70,6 +70,7 @@ export default function MenuPage() {
                 key={category.id}
                 ref={(el) => { sectionRefs.current[category.id] = el }}
                 data-category-id={category.id}
+                id={category.id}
               >
                 <div className="mb-3xl">
                   <h2 className="font-display text-display-sm md:text-display-md text-white text-balance">
@@ -80,7 +81,7 @@ export default function MenuPage() {
                 </div>
 
                 {category.items.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
                     {category.items.map((item) => (
                       <MenuItemCard key={item.id} item={item} />
                     ))}
@@ -90,7 +91,7 @@ export default function MenuPage() {
                 {category.groups && category.groups.map((group) => (
                   <div key={group.name} className="mt-5">
                     <h3 className="text-label-sm text-white/40 uppercase tracking-wider mb-4">{group.name}</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
                       {group.items.map((item) => (
                         <MenuItemCard key={item.id} item={item} />
                       ))}
