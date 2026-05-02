@@ -29,7 +29,7 @@ export default function MenuItemCard({ item, className }: MenuItemCardProps) {
         className
       )}
     >
-      <div className="aspect-[4/3] relative overflow-hidden">
+      <div className="relative pb-[75%]">
         <img
           ref={imgRef}
           src={item.image || PLACEHOLDER}
