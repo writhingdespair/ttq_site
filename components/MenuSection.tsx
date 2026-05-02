@@ -19,7 +19,7 @@ function MenuGroupBlock({ group }: { group: MenuGroup }) {
 }
 
 export default function MenuSection() {
-  const { ref, isVisible } = useScrollReveal({ threshold: 0.05 })
+  const { ref, isVisible } = useScrollReveal({ threshold: 0 })
 
   return (
     <section id="menu" className="py-5xl md:py-6xl bg-black">
