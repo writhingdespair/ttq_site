@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
 import { menuCategories } from '@/lib/data/menu'
 import { MenuGroup } from '@/lib/models/menu'
 import MenuItemCard from '@/components/menu/MenuItemRow'
 import MenuCategoryNav from '@/components/menu/MenuCategoryNav'
 import { useScrollReveal } from '@/lib/hooks/use-scroll-reveal'
+import { useMenuScrollSpy } from '@/lib/hooks/use-menu-scroll-spy'
 
 function MenuGroupBlock({ group }: { group: MenuGroup }) {
   return (
     <div className="mt-5">
       <h4 className="text-label-sm text-white/40 uppercase tracking-wider mb-4">{group.name}</h4>
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {group.items.map((item) => (
           <MenuItemCard key={item.id} item={item} />
         ))}
@@ -22,40 +22,7 @@ function MenuGroupBlock({ group }: { group: MenuGroup }) {
 
 export default function MenuSection() {
   const { ref, isVisible } = useScrollReveal({ threshold: 0 })
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
-  const lastActiveRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-category-id')
-            if (id && id !== lastActiveRef.current) {
-              lastActiveRef.current = id
-              setActiveCategory(id)
-            }
-          }
-        }
-      },
-      { rootMargin: `-${window.innerWidth >= 768 ? 120 : 112}px 0px -60% 0px`, threshold: 0 }
-    )
-
-    Object.values(sectionRefs.current).forEach((el) => {
-      if (el) observer.observe(el)
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
-  const scrollToCategory = (id: string) => {
-    const el = sectionRefs.current[id]
-    if (!el) return
-    const headerOffset = window.innerWidth >= 768 ? 120 : 112
-    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
-    window.scrollTo({ top, behavior: 'smooth' })
-  }
+  const { activeId, sectionRefs, scrollToCategory } = useMenuScrollSpy()
 
   return (
     <section id="menu" className="py-5xl md:py-6xl bg-black">
@@ -81,7 +48,7 @@ export default function MenuSection() {
 
         <MenuCategoryNav
           categories={menuCategories}
-          activeId={activeCategory}
+          activeId={activeId}
           onSelect={scrollToCategory}
         />
 
@@ -107,7 +74,7 @@ export default function MenuSection() {
                 </div>
 
                 {category.items.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {category.items.map((item) => (
                       <MenuItemCard key={item.id} item={item} />
                     ))}

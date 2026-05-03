@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Phone, Menu, X } from 'lucide-react'
 import OpenStatus from './OpenStatus'
 import CartButton from './cart/CartButton'
+import { Button } from '@/components/ui/Button'
 import CartDrawer from './cart/CartDrawer'
 import { useActiveSection } from '@/lib/hooks/use-active-section'
 import { useCart } from '@/lib/store/cart-context'
@@ -138,12 +139,14 @@ export default function Navbar() {
 
       {itemCount > 0 && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-sticky bg-black/95 backdrop-blur-xl border-t border-white/[0.08] px-4 py-3 animate-fade-in-up">
-          <button
+          <Button
+            variant="terra"
+            size="md"
+            className="w-full"
             onClick={() => setCartOpen(true)}
-            className="w-full btn btn-terra btn-md"
           >
             View Order · {itemCount} {itemCount === 1 ? 'item' : 'items'}
-          </button>
+          </Button>
         </div>
       )}
     </>

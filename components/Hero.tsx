@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
+import { LinkButton } from '@/components/ui/Button'
+import { RESTAURANT } from '@/lib/data/restaurant'
 
 export default function Hero() {
   const [loaded, setLoaded] = useState(false)
@@ -37,13 +39,13 @@ export default function Hero() {
             loaded ? 'opacity-100 translate-y-0 delay-200' : 'opacity-0 translate-y-4 delay-0'
           }`}
         >
-          <a href="#menu" className="btn btn-lg btn-primary no-underline group">
+          <LinkButton href="/#menu" variant="primary" size="lg" className="no-underline group">
             View the Menu
             <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} />
-          </a>
-          <a href="tel:+18453056168" className="btn btn-lg btn-secondary no-underline">
+          </LinkButton>
+          <LinkButton href={`tel:${RESTAURANT.phoneRaw}`} variant="secondary" size="lg">
             Call to Order
-          </a>
+          </LinkButton>
         </div>
       </div>
     </section>

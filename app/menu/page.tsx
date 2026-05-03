@@ -1,48 +1,13 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
 import { menuCategories } from '@/lib/data/menu'
 import MenuItemCard from '@/components/menu/MenuItemRow'
 import MenuCategoryNav from '@/components/menu/MenuCategoryNav'
 import Footer from '@/components/Footer'
+import { useMenuScrollSpy } from '@/lib/hooks/use-menu-scroll-spy'
 
 export default function MenuPage() {
-  const [activeCategory, setActiveCategory] = useState<string | null>(menuCategories[0]?.id || null)
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
-  const lastActiveRef = useRef<string | null>(menuCategories[0]?.id || null)
-
-  useEffect(() => {
-    const headerOffset = window.innerWidth >= 768 ? 120 : 112
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.getAttribute('data-category-id')
-            if (id && id !== lastActiveRef.current) {
-              lastActiveRef.current = id
-              setActiveCategory(id)
-            }
-          }
-        }
-      },
-      { rootMargin: `-${headerOffset}px 0px -60% 0px`, threshold: 0 }
-    )
-
-    Object.values(sectionRefs.current).forEach((el) => {
-      if (el) observer.observe(el)
-    })
-
-    return () => observer.disconnect()
-  }, [])
-
-  const scrollToCategory = (id: string) => {
-    const el = sectionRefs.current[id]
-    if (!el) return
-    const headerOffset = window.innerWidth >= 768 ? 120 : 112
-    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
-    window.scrollTo({ top, behavior: 'smooth' })
-  }
+  const { activeId, sectionRefs, scrollToCategory } = useMenuScrollSpy()
 
   return (
     <main id="main-content" className="min-h-screen bg-black">
@@ -63,7 +28,7 @@ export default function MenuPage() {
 
         <MenuCategoryNav
           categories={menuCategories}
-          activeId={activeCategory}
+          activeId={activeId}
           onSelect={scrollToCategory}
         />
 
@@ -85,7 +50,7 @@ export default function MenuPage() {
                 </div>
 
                 {category.items.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {category.items.map((item) => (
                       <MenuItemCard key={item.id} item={item} />
                     ))}
@@ -95,7 +60,7 @@ export default function MenuPage() {
                 {category.groups && category.groups.map((group) => (
                   <div key={group.name} className="mt-5">
                     <h3 className="text-label-sm text-white/40 uppercase tracking-wider mb-4">{group.name}</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                       {group.items.map((item) => (
                         <MenuItemCard key={item.id} item={item} />
                       ))}

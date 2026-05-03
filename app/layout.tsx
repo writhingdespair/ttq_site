@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import GlobalUI from '@/components/GlobalUI'
 import ClosureBanner from '@/components/ClosureBanner'
 import { CartProvider } from '@/lib/store/cart-context'
+import { RESTAURANT } from '@/lib/data/restaurant'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -51,30 +52,30 @@ export const metadata: Metadata = {
 const localBusinessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Restaurant',
-  name: 'Guerrero Taquería',
+  name: RESTAURANT.name,
   image: 'https://guerrerotaqueria.com/og-image.jpg',
   '@id': 'https://guerrerotaqueria.com',
   url: 'https://guerrerotaqueria.com',
-  telephone: '+18453056168',
+  telephone: RESTAURANT.phoneRaw,
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '3448 Route 9W',
-    addressLocality: 'Highland',
-    addressRegion: 'NY',
-    postalCode: '12528',
+    streetAddress: RESTAURANT.address,
+    addressLocality: RESTAURANT.city,
+    addressRegion: RESTAURANT.state,
+    postalCode: RESTAURANT.zip,
     addressCountry: 'US',
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: 41.72,
-    longitude: -73.96,
+    latitude: RESTAURANT.coordinates.lat,
+    longitude: RESTAURANT.coordinates.lng,
   },
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-      opens: '10:00',
-      closes: '20:00',
+      opens: `${String(RESTAURANT.hoursOpen).padStart(2, '0')}:00`,
+      closes: `${String(RESTAURANT.hoursClose).padStart(2, '0')}:00`,
     },
   ],
   priceRange: '$',
