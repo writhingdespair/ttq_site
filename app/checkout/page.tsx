@@ -6,7 +6,7 @@ import { useCart } from '@/lib/store/cart-context'
 import { formatPrice } from '@/lib/utils'
 import { placeOrder } from '@/lib/services/orders'
 import { Button, LinkButton } from '@/components/ui/Button'
-import { ArrowLeft, ArrowRight, Check, Clock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Clock, AlertCircle } from 'lucide-react'
 import { isRestaurantOpen } from '@/lib/data/restaurant'
 import type { OrderType } from '@/lib/models/order'
 
@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { items, cart, clearCart } = useCart()
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [orderType, setOrderType] = useState<OrderType>('pickup')
   const [isOpen, setIsOpen] = useState(true)
 
@@ -35,23 +36,29 @@ export default function CheckoutPage() {
     e.preventDefault()
     if (items.length === 0 || !isOpen) return
     setSubmitting(true)
+    setError(null)
 
-    const result = await placeOrder({
-      customerName: form.name,
-      customerPhone: form.phone,
-      customerEmail: form.email || undefined,
-      orderType,
-      items,
-      subtotal: cart.subtotal,
-      tax: cart.tax,
-      total: cart.total,
-      status: 'pending',
-      notes: form.notes || undefined,
-      createdAt: new Date().toISOString(),
-    })
+    try {
+      const result = await placeOrder({
+        customerName: form.name,
+        customerPhone: form.phone,
+        customerEmail: form.email || undefined,
+        orderType,
+        items,
+        subtotal: cart.subtotal,
+        tax: cart.tax,
+        total: cart.total,
+        status: 'pending',
+        notes: form.notes || undefined,
+        createdAt: new Date().toISOString(),
+      })
 
-    clearCart()
-    router.push(`/confirmation?orderId=${result.orderId}&wait=${result.estimatedWait}`)
+      clearCart()
+      router.push(`/confirmation?orderId=${result.orderId}&wait=${result.estimatedWait}`)
+    } catch {
+      setSubmitting(false)
+      setError('Something went wrong placing your order. Please try again.')
+    }
   }
 
   if (items.length === 0) {
@@ -211,6 +218,12 @@ export default function CheckoutPage() {
               </div>
 
               <div className="pt-3xl border-t border-white/[0.06]">
+                {error && (
+                  <div className="mb-4 flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                    <p className="text-body-sm text-red-300">{error}</p>
+                  </div>
+                )}
                 <Button
                   type="submit"
                   variant="terra"

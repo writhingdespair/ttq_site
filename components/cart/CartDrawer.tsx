@@ -1,16 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ShoppingBag, X, Plus, Minus, Trash2, Clock } from 'lucide-react'
 import { useCart } from '@/lib/store/cart-context'
 import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { isRestaurantOpen } from '@/lib/data/restaurant'
-import Link from 'next/link'
 
 export default function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, cart, updateQuantity, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     if (open) {
@@ -143,15 +144,14 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
                 Clear
               </Button>
               {isOpen ? (
-                <Link href="/checkout" className="flex-[2]" onClick={onClose}>
-                  <Button
-                    variant="terra"
-                    className="w-full"
-                    size="md"
-                  >
-                    Checkout
-                  </Button>
-                </Link>
+                <Button
+                  variant="terra"
+                  className="flex-[2]"
+                  size="md"
+                  onClick={() => { onClose(); router.push('/checkout') }}
+                >
+                  Checkout
+                </Button>
               ) : (
                 <Button
                   variant="terra"

@@ -12,19 +12,25 @@ function ConfirmationContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const orderId = searchParams.get('orderId')
-  const estimatedWait = parseInt(searchParams.get('wait') || '15', 10)
+  const estimatedWait = Number(searchParams.get('wait')) || 15
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
     if (!orderId) {
       setLoading(false)
       return
     }
-    retrieveOrder(orderId).then((o) => {
-      setOrder(o)
-      setLoading(false)
-    })
+    retrieveOrder(orderId)
+      .then((o) => {
+        setOrder(o)
+        setLoading(false)
+      })
+      .catch(() => {
+        setFetchError(true)
+        setLoading(false)
+      })
   }, [orderId])
 
   if (loading) {
@@ -35,7 +41,7 @@ function ConfirmationContent() {
     )
   }
 
-  if (!order) {
+  if (!order || fetchError) {
     return (
       <div className="text-center py-6xl">
         <h1 className="font-display text-display-md text-white text-balance">Order not found</h1>
