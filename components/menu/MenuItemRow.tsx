@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import { cn, formatPrice } from '@/lib/utils'
 import Badge from '@/components/ui/Badge'
 import AddToCartButton from '@/components/cart/AddToCartButton'
@@ -13,7 +13,7 @@ interface MenuItemCardProps {
   className?: string
 }
 
-export default function MenuItemCard({ item, className }: MenuItemCardProps) {
+const MenuItemCard = memo(function MenuItemCard({ item, className }: MenuItemCardProps) {
   const imgRef = useRef<HTMLImageElement>(null)
 
   const handleImgError = () => {
@@ -67,4 +67,6 @@ export default function MenuItemCard({ item, className }: MenuItemCardProps) {
       </div>
     </div>
   )
-}
+})
+
+export default MenuItemCard

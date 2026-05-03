@@ -9,6 +9,7 @@ import Footer from '@/components/Footer'
 export default function MenuPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(menuCategories[0]?.id || null)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  const lastActiveRef = useRef<string | null>(menuCategories[0]?.id || null)
 
   useEffect(() => {
     const headerOffset = window.innerWidth >= 768 ? 120 : 112
@@ -18,7 +19,10 @@ export default function MenuPage() {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const id = entry.target.getAttribute('data-category-id')
-            if (id) setActiveCategory(id)
+            if (id && id !== lastActiveRef.current) {
+              lastActiveRef.current = id
+              setActiveCategory(id)
+            }
           }
         }
       },

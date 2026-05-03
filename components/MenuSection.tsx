@@ -24,6 +24,7 @@ export default function MenuSection() {
   const { ref, isVisible } = useScrollReveal({ threshold: 0 })
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  const lastActiveRef = useRef<string | null>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -31,7 +32,10 @@ export default function MenuSection() {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const id = entry.target.getAttribute('data-category-id')
-            if (id) setActiveCategory(id)
+            if (id && id !== lastActiveRef.current) {
+              lastActiveRef.current = id
+              setActiveCategory(id)
+            }
           }
         }
       },

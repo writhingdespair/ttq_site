@@ -31,15 +31,6 @@ export default function MenuCategoryNav({
     return () => el.removeEventListener('scroll', check)
   }, [])
 
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el || !activeId) return
-    const activeBtn = el.querySelector(`[data-cat="${activeId}"]`)
-    if (activeBtn) {
-      activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }
-  }, [activeId])
-
   return (
     <div
       className={cn(
