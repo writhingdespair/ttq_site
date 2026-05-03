@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { isRestaurantOpen } from '@/lib/data/restaurant'
 import type { MenuCategory } from '@/lib/models/menu'
 
 export default function MenuCategoryNav({
@@ -18,6 +19,14 @@ export default function MenuCategoryNav({
   const scrollRef = useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = useState(false)
   const [showRightFade, setShowRightFade] = useState(true)
+  const [closed, setClosed] = useState(false)
+
+  useEffect(() => {
+    const check = () => setClosed(!isRestaurantOpen())
+    check()
+    const id = setInterval(check, 60000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -34,7 +43,8 @@ export default function MenuCategoryNav({
   return (
     <div
       className={cn(
-        'sticky top-16 md:top-[72px] z-50 bg-black border-b border-white/[0.06]',
+        'sticky z-50 bg-black border-b border-white/[0.06]',
+        closed ? 'top-[110px] md:top-[118px]' : 'top-16 md:top-[72px]',
         className
       )}
     >

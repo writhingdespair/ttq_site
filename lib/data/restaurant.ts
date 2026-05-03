@@ -13,7 +13,7 @@ export const RESTAURANT = {
   tagline: 'Taste has a home address.',
   description: 'Hand-pressed tortillas, charcoal-grilled meats, and family recipes from Guerrero, Mexico — served fresh from our truck.',
   phone: '(845) 305-6168',
-  phoneRaw: '+184****6168',
+  phoneRaw: '+18453056168',
   address: '3448 Route 9W',
   city: 'Highland',
   state: 'NY',
