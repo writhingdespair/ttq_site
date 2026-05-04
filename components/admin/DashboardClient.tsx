@@ -85,6 +85,7 @@ export default function DashboardClient({
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'orders' },
         (payload) => {
+          console.log('[realtime] INSERT received:', payload.new?.order_number)
           const row = payload.new as OrderRow
           const rowCreated = new Date(row.created_at).toISOString()
           if (rowCreated < todayStartET) return
@@ -109,13 +110,19 @@ export default function DashboardClient({
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'orders' },
         (payload) => {
+          console.log('[realtime] UPDATE received:', payload.new?.order_number, payload.new?.status)
           const updated = payload.new as OrderRow
           setOrders((prev) =>
             prev.map((o) => (o.id === updated.id ? updated : o))
           )
         }
       )
-      .subscribe()
+      .subscribe((status: string, err?: Error) => {
+        console.log('[realtime] subscription status:', status, err ?? '')
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          console.error('[realtime] channel failed:', status, err)
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)
