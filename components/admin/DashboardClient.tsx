@@ -40,7 +40,6 @@ function playChime() {
 
   const startSound = () => {
     try {
-      console.log('[chime] AudioContext state at play:', ctx.state)
       const o = ctx.createOscillator()
       const g = ctx.createGain()
       o.type = 'sine'
@@ -51,7 +50,6 @@ function playChime() {
       o.connect(g)
       g.connect(ctx.destination)
       o.start()
-      console.log('[chime] oscillator started')
       o.stop(ctx.currentTime + 0.45)
     } catch (e) {
       console.error('[chime] failed:', e)
@@ -135,12 +133,7 @@ export default function DashboardClient({
               })
             }, 2000)
 
-            if (!mutedRef.current) {
-              console.log('[chime] attempting to play, mutedRef.current =', mutedRef.current)
-              playChime()
-            } else {
-              console.log('[chime] skipped, muted')
-            }
+            if (!mutedRef.current) playChime()
           }
         )
         .on(
