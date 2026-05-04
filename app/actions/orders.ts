@@ -1,5 +1,6 @@
 'use server'
 
+import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { isRestaurantOpen } from '@/lib/data/restaurant'
 
@@ -33,7 +34,9 @@ export async function placeOrderAction(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data, error } = await supabase
+  const confirmationToken = crypto.randomBytes(16).toString('hex')
+
+  const { error } = await supabase
     .from('orders')
     .insert({
       customer_name: input.customerName,
@@ -43,17 +46,16 @@ export async function placeOrderAction(
       total: input.total,
       status: 'new',
       notes: input.notes || null,
+      confirmation_token: confirmationToken,
     })
-    .select('confirmation_token')
-    .single()
 
-  if (error || !data) {
+  if (error) {
     return { error: 'Failed to place order. Please try again.' }
   }
 
   const estimatedWait = estimateWaitTime(input.items)
 
-  return { confirmationToken: data.confirmation_token, estimatedWait }
+  return { confirmationToken, estimatedWait }
 }
 
 function estimateWaitTime(items: { quantity: number }[]): number {

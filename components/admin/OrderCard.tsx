@@ -45,9 +45,6 @@ export default function OrderCard({
 
     const supabase = createClient()
     const payload: Record<string, unknown> = { status: newStatus }
-    if (newStatus === 'completed') {
-      payload.picked_up_at = new Date().toISOString()
-    }
 
     const { error } = await supabase
       .from('orders')
