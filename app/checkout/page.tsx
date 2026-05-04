@@ -4,11 +4,17 @@ import { useState, type FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/lib/store/cart-context'
 import { formatPrice } from '@/lib/utils'
-import { placeOrder } from '@/lib/services/orders'
+import { placeOrderAction } from '@/app/actions/place-order'
 import { Button, LinkButton } from '@/components/ui/Button'
 import { ArrowLeft, ArrowRight, Check, Clock, AlertCircle } from 'lucide-react'
-import { isRestaurantOpen } from '@/lib/data/restaurant'
+import { isRestaurantOpen, RESTAURANT } from '@/lib/data/restaurant'
 import type { OrderType } from '@/lib/models/order'
+
+function formatHour(hour: number): string {
+  const ampm = hour < 12 ? 'AM' : 'PM'
+  const display = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
+  return `${display} ${ampm}`
+}
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -34,31 +40,27 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (items.length === 0 || !isOpen) return
+    if (items.length === 0) return
     setSubmitting(true)
     setError(null)
 
-    try {
-      const result = await placeOrder({
-        customerName: form.name,
-        customerPhone: form.phone,
-        customerEmail: form.email || undefined,
-        orderType,
-        items,
-        subtotal: cart.subtotal,
-        tax: cart.tax,
-        total: cart.total,
-        status: 'new',
-        notes: form.notes || undefined,
-        createdAt: new Date().toISOString(),
-      })
+    const result = await placeOrderAction({
+      customerName: form.name,
+      customerPhone: form.phone,
+      items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+      subtotal: cart.subtotal,
+      total: cart.total,
+      notes: form.notes || undefined,
+    })
 
-      clearCart()
-      router.push(`/confirmation?order=${result.confirmationToken}&wait=${result.estimatedWait}`)
-    } catch {
+    if ('error' in result) {
       setSubmitting(false)
-      setError('Something went wrong placing your order. Please try again.')
+      setError(result.error)
+      return
     }
+
+    clearCart()
+    router.push(`/confirmation?order=${result.confirmationToken}&wait=${result.estimatedWait}`)
   }
 
   if (items.length === 0) {
@@ -74,26 +76,6 @@ export default function CheckoutPage() {
           </p>
           <LinkButton href="/menu" variant="primary" size="lg" className="mt-3xl">
             Browse Menu
-            <ArrowRight className="h-5 w-5" strokeWidth={1.5} />
-          </LinkButton>
-        </div>
-      </main>
-    )
-  }
-
-  if (!isOpen) {
-    return (
-      <main id="main-content" className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center px-6 py-6xl max-w-md mx-auto">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.04] border border-white/[0.06] mb-6">
-            <Clock className="h-7 w-7 text-tertiary" strokeWidth={1.5} />
-          </div>
-          <h1 className="font-display text-display-md text-white text-balance">We are currently closed</h1>
-          <p className="mt-md text-body-base text-secondary max-w-sm mx-auto">
-            We are open daily from 10 AM to 8 PM. Come back during business hours.
-          </p>
-          <LinkButton href="/menu" variant="primary" size="lg" className="mt-3xl">
-            Back to Menu
             <ArrowRight className="h-5 w-5" strokeWidth={1.5} />
           </LinkButton>
         </div>
@@ -229,9 +211,14 @@ export default function CheckoutPage() {
                   variant="terra"
                   size="lg"
                   className="w-full"
-                  disabled={submitting}
+                  disabled={submitting || !isOpen}
                 >
-                  {submitting ? (
+                  {!isOpen ? (
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-5 w-5" strokeWidth={1.5} />
+                      Ordering opens at {formatHour(RESTAURANT.hoursOpen)}
+                    </span>
+                  ) : submitting ? (
                     <span className="flex items-center gap-2">
                       <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       Placing Order...
@@ -243,9 +230,6 @@ export default function CheckoutPage() {
                     </span>
                   )}
                 </Button>
-                <p className="mt-3 text-body-xs text-tertiary text-center">
-                  This is a sandbox order. No payment will be processed.
-                </p>
               </div>
             </form>
 
