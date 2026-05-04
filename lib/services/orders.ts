@@ -20,7 +20,9 @@ export async function retrieveOrder(token: string): Promise<Order | null> {
 
   if (error || !data) return null
 
-  const row = data as unknown as RpcOrder
+  const rows = data as unknown as RpcOrder[]
+  if (rows.length === 0) return null
+  const row = rows[0]
   return {
     id: row.order_number.toString(),
     customerName: row.customer_name,
