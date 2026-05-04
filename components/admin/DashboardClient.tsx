@@ -22,7 +22,9 @@ interface OrderRow {
 
 function playChime() {
   try {
+    console.log('[chime] creating AudioContext')
     const ctx = new AudioContext()
+    console.log('[chime] AudioContext state:', ctx.state)
     const o = ctx.createOscillator()
     const g = ctx.createGain()
     o.type = 'sine'
@@ -33,10 +35,11 @@ function playChime() {
     o.connect(g)
     g.connect(ctx.destination)
     o.start()
+    console.log('[chime] oscillator started')
     o.stop(ctx.currentTime + 0.45)
     setTimeout(() => ctx.close(), 500)
-  } catch {
-    // AudioContext unavailable (e.g. SSR, restricted env)
+  } catch (e) {
+    console.error('[chime] failed:', e)
   }
 }
 
@@ -108,7 +111,12 @@ export default function DashboardClient({
               })
             }, 2000)
 
-            if (!mutedRef.current) playChime()
+            if (!mutedRef.current) {
+              console.log('[chime] attempting to play, mutedRef.current =', mutedRef.current)
+              playChime()
+            } else {
+              console.log('[chime] skipped, muted')
+            }
           }
         )
         .on(
