@@ -17,13 +17,19 @@ export type OrderStatus = 'new' | 'preparing' | 'ready' | 'completed' | 'cancell
 
 export type OrderType = 'pickup' | 'delivery'
 
+export interface OrderLineItem {
+  name: string
+  price: number
+  quantity: number
+}
+
 export interface Order {
   id?: string
   customerName: string
   customerPhone: string
   customerEmail?: string
   orderType: OrderType
-  items: CartItem[]
+  items: OrderLineItem[]
   subtotal: number
   tax?: number
   total: number

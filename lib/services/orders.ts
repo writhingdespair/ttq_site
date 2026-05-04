@@ -25,8 +25,7 @@ export async function retrieveOrder(token: string): Promise<Order | null> {
     id: row.order_number.toString(),
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
-    items: row.items.map((i, index) => ({
-      menuItemId: `retrieved-${index}`,
+    items: row.items.map((i) => ({
       name: i.name,
       price: i.price,
       quantity: i.quantity,
