@@ -25,7 +25,7 @@ export interface Order {
   orderType: OrderType
   items: CartItem[]
   subtotal: number
-  tax: number
+  tax?: number
   total: number
   status: OrderStatus
   notes?: string

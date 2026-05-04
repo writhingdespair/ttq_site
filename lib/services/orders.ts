@@ -25,14 +25,13 @@ export async function retrieveOrder(token: string): Promise<Order | null> {
     id: row.order_number.toString(),
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
-    items: row.items.map((i) => ({
-      menuItemId: '',
+    items: row.items.map((i, index) => ({
+      menuItemId: `retrieved-${index}`,
       name: i.name,
       price: i.price,
       quantity: i.quantity,
     })),
     subtotal: row.subtotal,
-    tax: 0,
     total: row.total,
     status: row.status as Order['status'],
     notes: row.notes ?? undefined,

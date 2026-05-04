@@ -97,8 +97,8 @@ function ConfirmationContent() {
             <span className="text-label-sm text-terra-300 font-medium uppercase tracking-wider">Confirmed</span>
           </div>
           <ul className="space-y-2 text-left">
-            {order.items.map((item, i) => (
-              <li key={i} className="flex justify-between text-body-sm">
+            {order.items.map((item) => (
+              <li key={item.menuItemId} className="flex justify-between text-body-sm">
                 <span className="text-white">{item.quantity}× {item.name}</span>
                 <span className="text-secondary tabular-nums">{formatPrice(item.price * item.quantity)}</span>
               </li>
