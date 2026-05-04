@@ -9,6 +9,8 @@ CREATE SEQUENCE order_number_seq START 1001;
 CREATE TABLE orders (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   order_number       integer NOT NULL UNIQUE DEFAULT nextval('order_number_seq'),
+  -- confirmation_token is generated in the server action (crypto.randomBytes).
+  -- DEFAULT is a safety net for manual inserts / admin tools only.
   confirmation_token text UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
   created_at         timestamptz NOT NULL DEFAULT now(),
   picked_up_at       timestamptz,
@@ -24,6 +26,9 @@ CREATE TABLE orders (
 CREATE INDEX idx_orders_created_at ON orders (created_at DESC);
 CREATE INDEX idx_orders_status ON orders (status);
 CREATE INDEX idx_orders_confirmation_token ON orders (confirmation_token);
+
+-- Realtime: orders must be in the supabase_realtime publication
+ALTER PUBLICATION supabase_realtime ADD TABLE orders;
 
 -- 2. RPC for confirmation page lookup
 CREATE FUNCTION get_order_by_token(token text)
@@ -48,3 +53,18 @@ CREATE POLICY "auth_update" ON orders FOR UPDATE TO authenticated
   USING (true) WITH CHECK (true);
 
 -- No DELETE policy — nothing can delete orders
+
+-- 4. Trigger: automatically set picked_up_at when status → completed
+CREATE OR REPLACE FUNCTION set_picked_up_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.status = 'completed' AND OLD.status != 'completed' THEN
+    NEW.picked_up_at = now();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER orders_set_picked_up_at
+BEFORE UPDATE ON orders
+FOR EACH ROW EXECUTE FUNCTION set_picked_up_at();
