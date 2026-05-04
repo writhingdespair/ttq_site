@@ -10,3 +10,11 @@ out/
 
 # OS
 .DS_Store
+
+# tool config
+.agents/
+.claude/
+skills-lock.json
+
+# build artifacts
+*.tsbuildinfo
