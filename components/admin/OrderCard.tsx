@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { formatPrice } from '@/lib/utils'
 import StatusControl from '@/components/admin/StatusControl'
@@ -28,6 +28,25 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(hours / 24)}d ago`
 }
 
+function getTimeColor(dateStr: string, status: string): string {
+  const elapsed = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000)
+
+  if (status === 'completed' || status === 'cancelled') return ''
+
+  const tiers: Record<string, [number, number, number]> = {
+    new: [5, 15, Infinity],
+    preparing: [15, 25, Infinity],
+    ready: [5, 10, Infinity],
+  }
+
+  const t = tiers[status]
+  if (!t) return ''
+
+  if (elapsed < t[0]) return ''
+  if (elapsed < t[1]) return 'text-amber-400'
+  return 'text-red-400'
+}
+
 export default function OrderCard({
   order,
   isNew,
@@ -37,6 +56,19 @@ export default function OrderCard({
 }) {
   const [status, setStatus] = useState(order.status)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    setStatus(order.status)
+  }, [order.status])
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30000)
+    return () => clearInterval(id)
+  }, [])
+
+  const isDone = status === 'completed' || status === 'cancelled'
+  const timeColor = getTimeColor(order.created_at, status)
 
   const handleStatusChange = async (newStatus: string) => {
     const prevStatus = status
@@ -60,6 +92,8 @@ export default function OrderCard({
   return (
     <div
       className={`card p-5 transition-all duration-base ${
+        isDone ? 'opacity-60' : ''
+      } ${
         isNew ? 'animate-pulse-soft ring-1 ring-amber-500/50' : ''
       }`}
     >
@@ -69,7 +103,7 @@ export default function OrderCard({
             <p className="text-body-sm font-medium text-white tabular-nums">
               #{order.order_number}
             </p>
-            <span className="text-body-xs text-tertiary">{timeAgo(order.created_at)}</span>
+            <span className={`text-body-xs ${timeColor || 'text-tertiary'}`}>{timeAgo(order.created_at)}</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-body-sm text-secondary">{order.customer_name}</p>

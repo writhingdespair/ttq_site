@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { startOfTodayET, formatPrice } from '@/lib/utils'
 import OrderCard from '@/components/admin/OrderCard'
+import { useMuted } from '@/components/admin/MuteToggle'
 
 interface OrderRow {
   id: string
@@ -17,6 +18,38 @@ interface OrderRow {
   total: number
   status: string
   notes: string | null
+}
+
+function playChime() {
+  try {
+    const ctx = new AudioContext()
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(880, ctx.currentTime)
+    o.frequency.setValueAtTime(1100, ctx.currentTime + 0.08)
+    g.gain.setValueAtTime(0.12, ctx.currentTime)
+    g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.45)
+    o.connect(g)
+    g.connect(ctx.destination)
+    o.start()
+    o.stop(ctx.currentTime + 0.45)
+    setTimeout(() => ctx.close(), 500)
+  } catch {
+    // AudioContext unavailable (e.g. SSR, restricted env)
+  }
+}
+
+const ACTIVE_STATUSES = ['new', 'preparing', 'ready']
+
+function sortOrders(orders: OrderRow[]): OrderRow[] {
+  return [...orders].sort((a, b) => {
+    const aActive = ACTIVE_STATUSES.includes(a.status)
+    const bActive = ACTIVE_STATUSES.includes(b.status)
+    if (aActive && !bActive) return -1
+    if (!aActive && bActive) return 1
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
 }
 
 interface DashboardClientProps {
@@ -36,6 +69,11 @@ export default function DashboardClient({
   const [count, setCount] = useState(initialCount)
   const [revenue, setRevenue] = useState(initialRevenue)
   const [newOrderIds, setNewOrderIds] = useState<Set<string>>(new Set())
+  const { muted } = useMuted()
+  const mutedRef = useRef(muted)
+  mutedRef.current = muted
+
+  const sortedOrders = useMemo(() => sortOrders(orders), [orders])
 
   useEffect(() => {
     const supabase = createClient()
@@ -63,6 +101,8 @@ export default function DashboardClient({
               return next
             })
           }, 2000)
+
+          if (!mutedRef.current) playChime()
         }
       )
       .on(
@@ -111,7 +151,7 @@ export default function DashboardClient({
       </div>
 
       <div className="space-y-3">
-        {orders.map((order) => (
+        {sortedOrders.map((order) => (
           <OrderCard
             key={order.id}
             order={order}
