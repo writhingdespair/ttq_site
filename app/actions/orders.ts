@@ -29,10 +29,14 @@ export async function placeOrderAction(
     return { error: 'Ordering is currently closed. Please try again during business hours.' }
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return { error: 'Server configuration error. Please try again later.' }
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
   const confirmationToken = crypto.randomBytes(16).toString('hex')
 
