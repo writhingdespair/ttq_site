@@ -20,10 +20,27 @@ interface OrderRow {
   notes: string | null
 }
 
+let chimeCtx: AudioContext | null = null
+
+function getChimeCtx(): AudioContext | null {
+  if (typeof window === 'undefined') return null
+  if (!chimeCtx) {
+    try {
+      chimeCtx = new AudioContext()
+    } catch {
+      return null
+    }
+  }
+  return chimeCtx
+}
+
 function playChime() {
+  const ctx = getChimeCtx()
+  if (!ctx) return
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {})
+  }
   try {
-    console.log('[chime] creating AudioContext')
-    const ctx = new AudioContext()
     console.log('[chime] AudioContext state:', ctx.state)
     const o = ctx.createOscillator()
     const g = ctx.createGain()
@@ -37,7 +54,6 @@ function playChime() {
     o.start()
     console.log('[chime] oscillator started')
     o.stop(ctx.currentTime + 0.45)
-    setTimeout(() => ctx.close(), 500)
   } catch (e) {
     console.error('[chime] failed:', e)
   }
@@ -149,6 +165,18 @@ export default function DashboardClient({
       }
     })
     return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    const unlock = () => {
+      const ctx = getChimeCtx()
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {})
+      }
+      window.removeEventListener('pointerdown', unlock)
+    }
+    window.addEventListener('pointerdown', unlock)
+    return () => window.removeEventListener('pointerdown', unlock)
   }, [])
 
   if (orders.length === 0) {
