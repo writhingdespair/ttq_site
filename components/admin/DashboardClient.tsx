@@ -37,25 +37,33 @@ function getChimeCtx(): AudioContext | null {
 function playChime() {
   const ctx = getChimeCtx()
   if (!ctx) return
-  if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {})
+
+  const startSound = () => {
+    try {
+      console.log('[chime] AudioContext state at play:', ctx.state)
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.type = 'sine'
+      o.frequency.setValueAtTime(880, ctx.currentTime)
+      o.frequency.setValueAtTime(1100, ctx.currentTime + 0.08)
+      g.gain.setValueAtTime(0.12, ctx.currentTime)
+      g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.45)
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.start()
+      console.log('[chime] oscillator started')
+      o.stop(ctx.currentTime + 0.45)
+    } catch (e) {
+      console.error('[chime] failed:', e)
+    }
   }
-  try {
-    console.log('[chime] AudioContext state:', ctx.state)
-    const o = ctx.createOscillator()
-    const g = ctx.createGain()
-    o.type = 'sine'
-    o.frequency.setValueAtTime(880, ctx.currentTime)
-    o.frequency.setValueAtTime(1100, ctx.currentTime + 0.08)
-    g.gain.setValueAtTime(0.12, ctx.currentTime)
-    g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.45)
-    o.connect(g)
-    g.connect(ctx.destination)
-    o.start()
-    console.log('[chime] oscillator started')
-    o.stop(ctx.currentTime + 0.45)
-  } catch (e) {
-    console.error('[chime] failed:', e)
+
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(startSound).catch((e: unknown) => {
+      console.error('[chime] resume failed:', e)
+    })
+  } else {
+    startSound()
   }
 }
 
@@ -170,12 +178,28 @@ export default function DashboardClient({
   useEffect(() => {
     const unlock = () => {
       const ctx = getChimeCtx()
-      if (ctx && ctx.state === 'suspended') {
+      if (!ctx) return
+
+      // Play a 1-sample silent buffer to fully unlock Safari's audio.
+      // resume() alone is not enough — Safari requires an actual sound to play
+      // synchronously inside the gesture handler.
+      try {
+        const buffer = ctx.createBuffer(1, 1, 22050)
+        const source = ctx.createBufferSource()
+        source.buffer = buffer
+        source.connect(ctx.destination)
+        source.start(0)
+      } catch {
+        // ignore — fallback to resume() below
+      }
+
+      if (ctx.state === 'suspended') {
         ctx.resume().catch(() => {})
       }
+
       window.removeEventListener('pointerdown', unlock)
     }
-    window.addEventListener('pointerdown', unlock)
+    window.addEventListener('pointerdown', unlock, { once: true })
     return () => window.removeEventListener('pointerdown', unlock)
   }, [])
 
