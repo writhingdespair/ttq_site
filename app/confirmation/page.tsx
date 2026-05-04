@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Check, Clock, MapPin } from 'lucide-react'
-import { Button, LinkButton } from '@/components/ui/Button'
+import { LinkButton } from '@/components/ui/Button'
 import { retrieveOrder } from '@/lib/services/orders'
 import { formatPrice } from '@/lib/utils'
 import type { Order } from '@/lib/models/order'
@@ -11,18 +11,18 @@ import type { Order } from '@/lib/models/order'
 function ConfirmationContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const orderId = searchParams.get('orderId')
+  const token = searchParams.get('order')
   const estimatedWait = Number(searchParams.get('wait')) || 15
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(false)
 
   useEffect(() => {
-    if (!orderId) {
+    if (!token) {
       setLoading(false)
       return
     }
-    retrieveOrder(orderId)
+    retrieveOrder(token)
       .then((o) => {
         setOrder(o)
         setLoading(false)
@@ -31,7 +31,7 @@ function ConfirmationContent() {
         setFetchError(true)
         setLoading(false)
       })
-  }, [orderId])
+  }, [token])
 
   if (loading) {
     return (
@@ -93,12 +93,12 @@ function ConfirmationContent() {
 
         <div className="card p-5">
           <div className="flex justify-between items-center mb-4">
-            <p className="text-body-sm font-medium text-white">Order #{order.id?.slice(-8).toUpperCase() || '—'}</p>
+            <p className="text-body-sm font-medium text-white">Order #{order.id}</p>
             <span className="text-label-sm text-terra-300 font-medium uppercase tracking-wider">Confirmed</span>
           </div>
           <ul className="space-y-2 text-left">
-            {order.items.map((item) => (
-              <li key={item.menuItemId} className="flex justify-between text-body-sm">
+            {order.items.map((item, i) => (
+              <li key={i} className="flex justify-between text-body-sm">
                 <span className="text-white">{item.quantity}× {item.name}</span>
                 <span className="text-secondary tabular-nums">{formatPrice(item.price * item.quantity)}</span>
               </li>
@@ -121,7 +121,7 @@ function ConfirmationContent() {
       </div>
 
       <p className="mt-3xl text-body-xs text-white/25">
-        Sandbox order — no payment processed. Questions? Call (845) 305-6168
+        Questions? Call (845) 305-6168
       </p>
     </div>
   )

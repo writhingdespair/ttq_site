@@ -13,7 +13,7 @@ export interface Cart {
   total: number
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'picked_up' | 'cancelled'
+export type OrderStatus = 'new' | 'preparing' | 'ready' | 'completed' | 'cancelled'
 
 export type OrderType = 'pickup' | 'delivery'
 

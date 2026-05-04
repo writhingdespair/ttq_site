@@ -48,13 +48,13 @@ export default function CheckoutPage() {
         subtotal: cart.subtotal,
         tax: cart.tax,
         total: cart.total,
-        status: 'pending',
+        status: 'new',
         notes: form.notes || undefined,
         createdAt: new Date().toISOString(),
       })
 
       clearCart()
-      router.push(`/confirmation?orderId=${result.orderId}&wait=${result.estimatedWait}`)
+      router.push(`/confirmation?order=${result.confirmationToken}&wait=${result.estimatedWait}`)
     } catch {
       setSubmitting(false)
       setError('Something went wrong placing your order. Please try again.')
