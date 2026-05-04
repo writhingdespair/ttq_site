@@ -78,55 +78,72 @@ export default function DashboardClient({
   useEffect(() => {
     const supabase = createClient()
     const todayStartET = startOfTodayET()
+    let channel: ReturnType<typeof supabase.channel> | null = null
 
-    const channel = supabase
-      .channel('orders-realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'orders' },
-        (payload) => {
-          console.log('[realtime] INSERT received:', payload.new?.order_number)
-          const row = payload.new as OrderRow
-          const rowCreated = new Date(row.created_at).toISOString()
-          if (rowCreated < todayStartET) return
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token)
+      }
 
-          setOrders((prev) => [row, ...prev])
-          setCount((prev) => prev + 1)
-          setRevenue((prev) => prev + Number(row.total))
+      channel = supabase
+        .channel('orders-realtime')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'orders' },
+          (payload) => {
+            console.log('[realtime] INSERT received:', payload.new?.order_number)
+            const row = payload.new as OrderRow
+            const rowCreated = new Date(row.created_at).toISOString()
+            if (rowCreated < todayStartET) return
 
-          setNewOrderIds((prev) => new Set(prev).add(row.id))
-          setTimeout(() => {
-            setNewOrderIds((prev) => {
-              const next = new Set(prev)
-              next.delete(row.id)
-              return next
-            })
-          }, 2000)
+            setOrders((prev) => [row, ...prev])
+            setCount((prev) => prev + 1)
+            setRevenue((prev) => prev + Number(row.total))
 
-          if (!mutedRef.current) playChime()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders' },
-        (payload) => {
-          console.log('[realtime] UPDATE received:', payload.new?.order_number, payload.new?.status)
-          const updated = payload.new as OrderRow
-          setOrders((prev) =>
-            prev.map((o) => (o.id === updated.id ? updated : o))
-          )
-        }
-      )
-      .subscribe((status: string, err?: Error) => {
-        console.log('[realtime] subscription status:', status, err ?? '')
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          console.error('[realtime] channel failed:', status, err)
-        }
-      })
+            setNewOrderIds((prev) => new Set(prev).add(row.id))
+            setTimeout(() => {
+              setNewOrderIds((prev) => {
+                const next = new Set(prev)
+                next.delete(row.id)
+                return next
+              })
+            }, 2000)
+
+            if (!mutedRef.current) playChime()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'orders' },
+          (payload) => {
+            console.log('[realtime] UPDATE received:', payload.new?.order_number, payload.new?.status)
+            const updated = payload.new as OrderRow
+            setOrders((prev) =>
+              prev.map((o) => (o.id === updated.id ? updated : o))
+            )
+          }
+        )
+        .subscribe((status: string, err?: Error) => {
+          console.log('[realtime] subscription status:', status, err ?? '')
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            console.error('[realtime] channel failed:', status, err)
+          }
+        })
+    })
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) supabase.removeChannel(channel)
     }
+  }, [])
+
+  useEffect(() => {
+    const supabase = createClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) {
+        supabase.realtime.setAuth(session.access_token)
+      }
+    })
+    return () => subscription.unsubscribe()
   }, [])
 
   if (orders.length === 0) {
