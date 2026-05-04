@@ -20,6 +20,7 @@
 - Deploy the same env vars to your Vercel project
 
 ## 4. Create the admin user
+- **IMPORTANT:** Use the Supabase Dashboard only. Do NOT create the user via raw SQL — it leaves required `auth.users` columns NULL, which breaks `signInWithPassword`.
 - In Supabase Dashboard → Authentication → Users → Add User
 - Enter the admin email and password
 - Check "Auto Confirm User" (skip email verification)
@@ -55,5 +56,6 @@
 
 **Realtime not working:**
 - Verify Supabase Realtime is enabled (it is by default)
-- Check SQL: the table must be in the `public` schema and have the `REPLICA IDENTITY` set to `FULL` (it defaults to `PRIMARY KEY`)
-- In Supabase Dashboard → Database → Replication, make sure the `orders` table is listed
+- Ensure `ALTER PUBLICATION supabase_realtime ADD TABLE orders;` was run (included in the setup SQL)
+- In Supabase Dashboard → Database → Replication, confirm the `orders` table is listed under the `supabase_realtime` publication
+- If the table was recreated after setup, re-run `ALTER PUBLICATION supabase_realtime ADD TABLE orders;`
