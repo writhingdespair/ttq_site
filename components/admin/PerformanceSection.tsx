@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { formatPrice } from '@/lib/utils'
 
-interface WindowMetrics {
+export interface WindowMetrics {
   orderCount: number
   revenue: number
   aov: number | null
@@ -12,6 +11,8 @@ interface WindowMetrics {
 
 interface Props {
   windows: Record<number, WindowMetrics>
+  windowDays: number
+  onWindowChange: (days: number) => void
 }
 
 const LABELS: Record<number, string> = {
@@ -21,8 +22,11 @@ const LABELS: Record<number, string> = {
   30: '30 days',
 }
 
-export default function PerformanceSection({ windows }: Props) {
-  const [windowDays, setWindowDays] = useState(7)
+export default function PerformanceSection({
+  windows,
+  windowDays,
+  onWindowChange,
+}: Props) {
   const m = windows[windowDays]
 
   return (
@@ -36,7 +40,7 @@ export default function PerformanceSection({ windows }: Props) {
           {[7, 14, 21, 30].map((d) => (
             <button
               key={d}
-              onClick={() => setWindowDays(d)}
+              onClick={() => onWindowChange(d)}
               className={`px-3 py-1.5 rounded-lg text-label-sm font-medium transition-all duration-base ${
                 windowDays === d
                   ? 'bg-white text-black'
