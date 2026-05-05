@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Newsreader } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import SuppressOnAdmin from '@/components/SuppressOnAdmin'
 import GlobalUI from '@/components/GlobalUI'
 import ClosureBanner from '@/components/ClosureBanner'
 import { CartProvider } from '@/lib/store/cart-context'
@@ -101,8 +102,10 @@ export default function RootLayout({
       <body className="font-sans">
         <CartProvider>
           <GlobalUI />
-          <ClosureBanner />
-          <Navbar />
+          <SuppressOnAdmin>
+            <ClosureBanner />
+            <Navbar />
+          </SuppressOnAdmin>
           {children}
         </CartProvider>
       </body>
