@@ -53,32 +53,23 @@ function getTimeColor(dateStr: string, status: string): string {
 interface OrderCardProps {
   order: OrderRow
   isNew: boolean
-  onHideStart?: (order: OrderRow) => void
-  onHideRevert?: (orderId: string) => void
-  onUnhideStart?: (order: OrderRow) => void
-  onUnhideRevert?: (orderId: string) => void
+  onHide?: (order: OrderRow) => void
+  onUnhide?: (order: OrderRow) => void
 }
 
 export default function OrderCard({
   order,
   isNew,
-  onHideStart,
-  onHideRevert,
-  onUnhideStart,
-  onUnhideRevert,
+  onHide,
+  onUnhide,
 }: OrderCardProps) {
   const [status, setStatus] = useState(order.status)
-  const [hiddenAt, setHiddenAt] = useState<string | null>(order.hidden_at)
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [, setTick] = useState(0)
 
   useEffect(() => {
     setStatus(order.status)
   }, [order.status])
-
-  useEffect(() => {
-    setHiddenAt(order.hidden_at)
-  }, [order.hidden_at])
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 30000)
@@ -107,36 +98,6 @@ export default function OrderCard({
     }
   }
 
-  const handleHide = async () => {
-    const supabase = createClient()
-    onHideStart?.(order)
-
-    const { error } = await supabase
-      .from('orders')
-      .update({ hidden_at: new Date().toISOString() })
-      .eq('id', order.id)
-
-    if (error) {
-      onHideRevert?.(order.id)
-      throw error
-    }
-  }
-
-  const handleUnhide = async () => {
-    const supabase = createClient()
-    onUnhideStart?.(order)
-
-    const { error } = await supabase
-      .from('orders')
-      .update({ hidden_at: null })
-      .eq('id', order.id)
-
-    if (error) {
-      onUnhideRevert?.(order.id)
-      throw error
-    }
-  }
-
   return (
     <div
       className={`card p-5 transition-all duration-base ${
@@ -144,7 +105,7 @@ export default function OrderCard({
       } ${
         isNew ? 'animate-pulse-soft ring-1 ring-amber-500/50' : ''
       } ${
-        hiddenAt ? 'border-l-2 border-amber-500/30' : ''
+        order.hidden_at ? 'border-l-2 border-amber-500/30' : ''
       }`}
     >
       <div className="flex items-start justify-between mb-3">
@@ -191,9 +152,9 @@ export default function OrderCard({
       <StatusControl
         currentStatus={status}
         onChange={handleStatusChange}
-        hiddenAt={hiddenAt}
-        onHide={handleHide}
-        onUnhide={handleUnhide}
+        hiddenAt={order.hidden_at}
+        onHide={onHide ? () => onHide(order) : undefined}
+        onUnhide={onUnhide ? () => onUnhide(order) : undefined}
       />
     </div>
   )

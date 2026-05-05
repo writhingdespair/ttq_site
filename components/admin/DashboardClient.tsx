@@ -115,7 +115,7 @@ export default function DashboardClient({
   const { muted } = useMuted()
   const mutedRef = useRef(muted)
   mutedRef.current = muted
-  const hidePromiseRef = useRef<Promise<unknown> | null>(null)
+  const hidePromiseRef = useRef<any>(null)
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const sortedOrders = useMemo(() => {
@@ -162,9 +162,17 @@ export default function DashboardClient({
     }
   }, [todayStart])
 
-  const handleHideStart = useCallback((order: OrderRow) => {
+  const handleHide = useCallback(async (order: OrderRow) => {
+    // Optimistic: set hidden_at on the local row (fix: immediate visual feedback)
+    const hiddenTs = new Date().toISOString()
+    setOrders((prev) =>
+      prev.map((o) => (o.id === order.id ? { ...o, hidden_at: hiddenTs } : o))
+    )
+
+    // Track in hiddenOrderIds for filter
     setHiddenOrderIds((prev) => new Set(prev).add(order.id))
 
+    // Setup undo bar (single-undo displaces earlier)
     if (undoTimeoutRef.current) {
       clearTimeout(undoTimeoutRef.current)
     }
@@ -174,44 +182,74 @@ export default function DashboardClient({
     }, 8000)
     setBar({ kind: 'undo', order })
 
-    return (promise: Promise<unknown>) => {
-      hidePromiseRef.current = promise
+    // Fire UPDATE, store promise directly on ref (fix: promise-chaining)
+    const supabase = createClient()
+    hidePromiseRef.current = supabase
+      .from('orders')
+      .update({ hidden_at: hiddenTs })
+      .eq('id', order.id)
+
+    const { error } = await hidePromiseRef.current
+
+    if (error) {
+      // Revert optimistic state
+      setOrders((prev) =>
+        prev.map((o) => (o.id === order.id ? { ...o, hidden_at: null } : o))
+      )
+      setHiddenOrderIds((prev) => {
+        const next = new Set(prev)
+        next.delete(order.id)
+        return next
+      })
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current)
+        undoTimeoutRef.current = null
+      }
+      hidePromiseRef.current = null
+      setBar({
+        kind: 'error',
+        message: 'Failed to hide. Order is still visible below.',
+        actionLabel: 'Dismiss',
+        onRetry: () => setBar(null),
+      })
     }
   }, [])
 
-  const handleHideRevert = useCallback((orderId: string) => {
-    setHiddenOrderIds((prev) => {
-      const next = new Set(prev)
-      next.delete(orderId)
-      return next
-    })
-    if (undoTimeoutRef.current) {
-      clearTimeout(undoTimeoutRef.current)
-      undoTimeoutRef.current = null
-    }
-    hidePromiseRef.current = null
-
-    const barOrder = (bar as UndoBar | null)?.order
-    setBar({
-      kind: 'error',
-      message: barOrder ? `Failed to hide order #${barOrder.order_number}.` : 'Failed to hide order.',
-      actionLabel: 'Dismiss',
-      onRetry: () => {
-        setBar(null)
-      },
-    })
-  }, [bar])
-
-  const handleUnhideStart = useCallback((order: OrderRow) => {
+  // handleUnhide is used from the Show Hidden view (no undo bar, no promise-chaining)
+  const handleUnhide = useCallback(async (order: OrderRow) => {
+    // Optimistic: clear hidden_at on the local row (fix: immediate visual feedback)
+    setOrders((prev) =>
+      prev.map((o) => (o.id === order.id ? { ...o, hidden_at: null } : o))
+    )
     setHiddenOrderIds((prev) => {
       const next = new Set(prev)
       next.delete(order.id)
       return next
     })
-  }, [])
 
-  const handleUnhideRevert = useCallback((orderId: string) => {
-    setHiddenOrderIds((prev) => new Set(prev).add(orderId))
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('orders')
+      .update({ hidden_at: null })
+      .eq('id', order.id)
+
+    if (error) {
+      // Revert
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? { ...o, hidden_at: new Date().toISOString() }
+            : o
+        )
+      )
+      setHiddenOrderIds((prev) => new Set(prev).add(order.id))
+      setBar({
+        kind: 'error',
+        message: `Failed to unhide order #${order.order_number}.`,
+        actionLabel: 'Retry',
+        onRetry: () => handleUnhide(order),
+      })
+    }
   }, [])
 
   const handleUndo = useCallback(async (orderOverride?: OrderRow) => {
@@ -225,6 +263,10 @@ export default function DashboardClient({
     }
     setBar(null)
 
+    // Optimistic: clear hidden_at on the local row so the filter passes
+    setOrders((prev) =>
+      prev.map((o) => (o.id === order.id ? { ...o, hidden_at: null } : o))
+    )
     setHiddenOrderIds((prev) => {
       const next = new Set(prev)
       next.delete(order.id)
@@ -243,6 +285,14 @@ export default function DashboardClient({
       .eq('id', order.id)
 
     if (error) {
+      // Revert: re-set hidden_at and re-add to hiddenOrderIds
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? { ...o, hidden_at: new Date().toISOString() }
+            : o
+        )
+      )
       setHiddenOrderIds((prev) => new Set(prev).add(order.id))
       setBar({
         kind: 'error',
@@ -417,10 +467,8 @@ export default function DashboardClient({
               key={order.id}
               order={order}
               isNew={newOrderIds.has(order.id)}
-              onHideStart={handleHideStart}
-              onHideRevert={handleHideRevert}
-              onUnhideStart={handleUnhideStart}
-              onUnhideRevert={handleUnhideRevert}
+              onHide={handleHide}
+              onUnhide={handleUnhide}
             />
           ))}
         </div>
