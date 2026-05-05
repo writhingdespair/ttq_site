@@ -27,8 +27,6 @@ export default function PerformanceSection({ windows }: Props) {
 
   return (
     <div>
-      <div className="section-divider my-4xl" />
-
       <div className="flex items-baseline justify-between mb-3xl">
         <div>
           <h2 className="font-display text-display-sm text-white">Performance</h2>
