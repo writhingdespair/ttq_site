@@ -16,6 +16,7 @@ interface OrderRow {
   total: number
   status: string
   notes: string | null
+  hidden_at: string | null
 }
 
 function timeAgo(dateStr: string): string {

@@ -15,6 +15,7 @@ interface OrderRow {
   total: number
   status: string
   notes: string | null
+  hidden_at: string | null
 }
 
 export default async function AdminPage() {
@@ -29,6 +30,7 @@ export default async function AdminPage() {
       .from('orders')
       .select('*')
       .gte('created_at', todayStart)
+      .is('hidden_at', null)
       .order('created_at', { ascending: false })
 
     if (error) throw error

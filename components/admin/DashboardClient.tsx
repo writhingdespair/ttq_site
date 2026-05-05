@@ -18,6 +18,7 @@ interface OrderRow {
   total: number
   status: string
   notes: string | null
+  hidden_at: string | null
 }
 
 let chimeCtx: AudioContext | null = null
