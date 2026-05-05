@@ -29,6 +29,12 @@ export default async function AdminLayout({
             <ShowHiddenToggle />
             <MuteToggle />
             <Link
+              href="/admin"
+              className="text-body-sm text-tertiary hover:text-white no-underline transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
               href="/admin/reports"
               className="text-body-sm text-tertiary hover:text-white no-underline transition-colors"
             >
