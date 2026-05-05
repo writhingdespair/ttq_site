@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { XCircle, CheckCircle } from 'lucide-react'
+import { XCircle, CheckCircle, EyeOff } from 'lucide-react'
 
 const STEPS: { key: string; label: string }[] = [
   { key: 'new', label: 'New' },
@@ -19,24 +19,80 @@ const STEP_INDEX: Record<string, number> = {
   cancelled: -1,
 }
 
+interface StatusControlProps {
+  currentStatus: string
+  onChange: (status: string) => void
+  hiddenAt?: string | null
+  onHide?: () => Promise<void>
+  onUnhide?: () => Promise<void>
+}
+
 export default function StatusControl({
   currentStatus,
   onChange,
-}: {
-  currentStatus: string
-  onChange: (status: string) => void
-}) {
+  hiddenAt,
+  onHide,
+  onUnhide,
+}: StatusControlProps) {
   const [confirmCancel, setConfirmCancel] = useState(false)
+  const [hideError, setHideError] = useState<string | null>(null)
   const isCancelled = currentStatus === 'cancelled'
   const currentIndex = STEP_INDEX[currentStatus] ?? -1
 
+  const handleHide = async () => {
+    if (!onHide) return
+    setHideError(null)
+    try {
+      await onHide()
+    } catch {
+      setHideError('Failed to hide')
+    }
+  }
+
+  const handleUnhide = async () => {
+    if (!onUnhide) return
+    setHideError(null)
+    try {
+      await onUnhide()
+    } catch {
+      setHideError('Failed to unhide')
+    }
+  }
+
   if (isCancelled) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-label-sm bg-red-500/10 text-red-300 border border-red-500/20">
-          <XCircle className="h-3.5 w-3.5" strokeWidth={1.5} />
-          Cancelled
-        </span>
+      <div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-label-sm bg-red-500/10 text-red-300 border border-red-500/20">
+            <XCircle className="h-3.5 w-3.5" strokeWidth={1.5} />
+            Cancelled
+          </span>
+          {hiddenAt && (
+            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-label-sm bg-amber-500/10 text-amber-300 border border-amber-500/20">
+              <EyeOff className="h-3 w-3" />
+              Hidden
+            </span>
+          )}
+          {!hiddenAt && onHide && (
+            <button
+              onClick={handleHide}
+              className="px-3 py-1.5 rounded-lg text-label-sm font-medium text-white/20 hover:text-white/40 hover:bg-white/[0.06] transition-all duration-base"
+            >
+              Hide
+            </button>
+          )}
+          {hiddenAt && onUnhide && (
+            <button
+              onClick={handleUnhide}
+              className="px-3 py-1.5 rounded-lg text-label-sm font-medium text-terra-300 hover:text-terra-200 hover:bg-terra-500/10 transition-all duration-base"
+            >
+              Unhide
+            </button>
+          )}
+        </div>
+        {hideError && (
+          <p className="text-body-xs text-red-400 mt-2">{hideError}</p>
+        )}
       </div>
     )
   }

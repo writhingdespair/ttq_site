@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import LogoutButton from '@/components/admin/LogoutButton'
 import MuteToggle from '@/components/admin/MuteToggle'
+import ShowHiddenToggle from '@/components/admin/ShowHiddenToggle'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -25,6 +26,7 @@ export default async function AdminLayout({
             <span className="text-label-sm text-tertiary">Admin</span>
           </div>
           <div className="flex items-center gap-3">
+            <ShowHiddenToggle />
             <MuteToggle />
             <Link
               href="/"
