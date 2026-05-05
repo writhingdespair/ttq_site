@@ -115,7 +115,7 @@ export default function DashboardClient({
   const { muted } = useMuted()
   const mutedRef = useRef(muted)
   mutedRef.current = muted
-  const hidePromiseRef = useRef<any>(null)
+  const hidePromiseRef = useRef<PromiseLike<{ error: { message: string } | null }> | null>(null)
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const sortedOrders = useMemo(() => {
