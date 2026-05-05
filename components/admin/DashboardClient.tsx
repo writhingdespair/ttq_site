@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import type { PostgrestSingleResponse } from '@supabase/supabase-js'
 import { startOfTodayET, formatPrice } from '@/lib/utils'
 import OrderCard from '@/components/admin/OrderCard'
 import { useMuted } from '@/components/admin/MuteToggle'
@@ -115,7 +116,7 @@ export default function DashboardClient({
   const { muted } = useMuted()
   const mutedRef = useRef(muted)
   mutedRef.current = muted
-  const hidePromiseRef = useRef<PromiseLike<{ error: { message: string } | null }> | null>(null)
+  const hidePromiseRef = useRef<PromiseLike<PostgrestSingleResponse<null>> | null>(null)
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const sortedOrders = useMemo(() => {
