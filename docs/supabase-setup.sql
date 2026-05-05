@@ -20,7 +20,8 @@ CREATE TABLE orders (
   subtotal           numeric(10,2) NOT NULL,
   total              numeric(10,2) NOT NULL,
   status             order_status NOT NULL DEFAULT 'new',
-  notes              text
+  notes              text,
+  hidden_at          timestamptz
 );
 
 CREATE INDEX idx_orders_created_at ON orders (created_at DESC);
@@ -68,3 +69,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER orders_set_picked_up_at
 BEFORE UPDATE ON orders
 FOR EACH ROW EXECUTE FUNCTION set_picked_up_at();
+
+-- 5. Migration: soft-delete column for cancelled orders
+-- Run on existing databases if the column does not already exist:
+-- ALTER TABLE orders ADD COLUMN hidden_at timestamptz;
